@@ -230,6 +230,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: tao-sync-*
+
+      - name: 查看下载结果
         run: ls -R
 
 #      - id: create_release
