@@ -57,7 +57,7 @@ jobs:
 
   build-docker:
     runs-on: ubuntu-latest
-    needs: [build-frontend]
+    needs: [get-version, build-frontend]
     env:
       TAG_LIST: ${{needs.get-version.outputs.TAG_LIST}}
 
@@ -99,6 +99,9 @@ jobs:
     if: ${{ !contains(needs.get-version.outputs.VERSION, 'dev') && !contains(needs.get-version.outputs.VERSION, 'pre') }}
 
     steps:
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
+
       - name: 打tag
         run: |
           git config --local user.email "1416814478@qq.com"
