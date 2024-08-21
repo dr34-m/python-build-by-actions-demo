@@ -96,7 +96,7 @@ jobs:
     needs: [get-version]
     env:
       VERSION: ${{needs.get-version.outputs.VERSION}}
-    if: ${{ !contains(env.VERSION, 'dev') && !contains(env.VERSION, 'pre') }}
+    if: ${{ !contains(needs.get-version.outputs.VERSION, 'dev') && !contains(needs.get-version.outputs.VERSION, 'pre') }}
 
     steps:
       - name: 打tag
