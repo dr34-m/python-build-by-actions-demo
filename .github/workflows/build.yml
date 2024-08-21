@@ -8,12 +8,16 @@ on:
 jobs:
   get-version:
     runs-on: ubuntu-latest
+    outputs:
+      TAG_LIST: ${{steps.getVersion.outputs.TAG_LIST}}
+      VERSION: ${{steps.getVersion.outputs.VERSION}}
 
     steps:
       - name: 检出仓库代码
         uses: actions/checkout@v4
 
-      - name: 获取版本号
+      - id: getVersion
+        name: 获取版本号
         run: |
           versions=$(head -n 1 version.txt)
           tagList=""
@@ -23,8 +27,8 @@ jobs:
             tagList+="dr34m/python-action-demo:$version,"
           done
           tagList=${tagList%?}
-          echo "TAG_LIST=$tagList" >> $GITHUB_OUTPUT
-          echo "VERSION=$cuVersion" >> $GITHUB_OUTPUT
+          echo "TAG_LIST=$tagList" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$cuVersion" >> "$GITHUB_OUTPUT"
 
   build-frontend:
     runs-on: ubuntu-latest
