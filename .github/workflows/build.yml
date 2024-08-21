@@ -6,7 +6,7 @@ on:
     paths: [ 'version.txt' ]
 
 jobs:
-  build:
+  get-version:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,8 +23,18 @@ jobs:
             tagList+="dr34m/python-action-demo:$version,"
           done
           tagList=${tagList%?}
-          echo "tagList=$tagList" >> $GITHUB_ENV
-          echo "version=$cuVersion" >> $GITHUB_ENV
+          echo "TAG_LIST=$tagList" >> $GITHUB_OUTPUT
+          echo "VERSION=$cuVersion" >> $GITHUB_OUTPUT
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    needs: [get-version]
+    env:
+      VERSION: ${{needs.get-version.outputs.VERSION}}
+
+    steps:
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
 
       - name: 安装Node.js 14.x
         uses: actions/setup-node@v4
@@ -33,10 +43,33 @@ jobs:
 
       - name: 安装依赖并构建前端
         run: |
-          sed -i "s/__version_placeholder__/$version/g" frontend/src/views/page/setting/index.vue
+          sed -i "s/__version_placeholder__/$VERSION/g" frontend/src/views/page/setting/index.vue
           cd frontend
           npm install
           npm run build
+
+      - name: 上传artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 1
+
+  build-docker:
+    runs-on: ubuntu-latest
+    needs: [build-frontend]
+    env:
+      TAG_LIST: ${{needs.get-version.outputs.TAG_LIST}}
+
+    steps:
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
+
+      - name: 下载前端
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
 
       - name: 设置QEMU
         uses: docker/setup-qemu-action@v3
@@ -55,18 +88,24 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.tagList }}
+          tags: ${{ env.TAG_LIST }}
           platforms: linux/amd64
 
+  create-tag:
+    runs-on: ubuntu-latest
+    needs: [get-version]
+    env:
+      VERSION: ${{needs.get-version.outputs.VERSION}}
+    if: ${{ !contains(env.VERSION, 'dev') && !contains(env.VERSION, 'pre') }}
+
+    steps:
       - name: 打tag
-        if: ${{ !contains(env.version, 'dev') && !contains(env.version, 'pre') }}
         run: |
           git config --local user.email "1416814478@qq.com"
           git config --local user.name "dr34-m"
-          git tag -a $version -m "release $version"
+          git tag -a $VERSION -m "release $VERSION"
 
       - name: 推送tag
-        if: ${{ !contains(env.version, 'dev') && !contains(env.version, 'pre') }}
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
