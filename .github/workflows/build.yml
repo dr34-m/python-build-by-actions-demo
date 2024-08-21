@@ -215,6 +215,11 @@ jobs:
 #          pattern: demo-*
 #          path: demo
 #          merge-multiple: true
+      - name: 没有文件创建文件
+        run: |
+          FILE='doc/changelog/$VERSION.md'
+          echo "FILE=$FILE" >> "$GITHUB_ENV"
+          [ ! -f "$FILE" ] && touch "$FILE" && echo "$VERSION" > "$FILE"
 
       - id: create_release
         name: 创建release
@@ -222,7 +227,7 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
 #          files: demo/*
-          body_path: doc/changelog/${{ env.VERSION }}.md
+          body_path: ${{ env.FILE }}
           prerelease: ${{ contains(env.VERSION, 'dev') || contains(env.VERSION, 'pre') }}
           draft: true
 
