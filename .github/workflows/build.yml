@@ -219,8 +219,11 @@ jobs:
       - name: 没有版本日志文件自动创建
         run: |
           LOG_FILE="doc/changelog/$VERSION.md"
+          if [ ! -f "$LOG_FILE" ]; then
+            touch "$LOG_FILE"
+            echo "$VERSION" > "$LOG_FILE"
+          fi
           echo "LOG_FILE=$LOG_FILE" >> "$GITHUB_ENV"
-          [ ! -f "$LOG_FILE" ] && touch "$LOG_FILE" && echo "$VERSION" > "$LOG_FILE"
 
       - name: 创建release
         uses: softprops/action-gh-release@v2
