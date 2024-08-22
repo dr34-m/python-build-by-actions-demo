@@ -5,6 +5,11 @@ on:
     branches: [ 'main' ]
     paths: [ 'version.txt' ]
 
+env:
+  APP_NAME: demo
+  DOCKER_USER: dr34m
+  DOCKER_NAME: python-action-demo
+
 jobs:
   get-version:
     name: 获取版本号
@@ -25,7 +30,7 @@ jobs:
           IFS=',' read -ra versionList <<< "$versions"
           cuVersion="${versionList[0]}"
           for version in "${versionList[@]}"; do
-            tagList+="dr34m/python-action-demo:$version,"
+            tagList+="$DOCKER_USER/$DOCKER_NAME:$version,"
           done
           tagList=${tagList%?}
           echo "TAG_LIST=$tagList" >> "$GITHUB_OUTPUT"
@@ -87,7 +92,7 @@ jobs:
       - name: 登录到DockerHub
         uses: docker/login-action@v3
         with:
-          username: dr34m
+          username: ${{ env.DOCKER_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: 构建并推送
@@ -122,14 +127,14 @@ jobs:
         run: |
           python -m pip install 'pyinstaller>=6,<7'
           python -m pip install -r requirements.txt
-          python -m PyInstaller demo.spec
-          cd dist && 7z a demo-windows-amd64.zip demo.exe
+          python -m PyInstaller "$APP_NAME.spec"
+          cd dist && 7z a "$APP_NAME-windows-amd64.zip" "$APP_NAME.exe"
 
       - name: 上传artifact
         uses: actions/upload-artifact@v4
         with:
-          name: demo-windows-amd64
-          path: dist/demo-windows-amd64.zip
+          name: dist-windows-amd64
+          path: dist/${{ env.APP_NAME }}-windows-amd64.zip
 
   build-darwin-amd64:
     name: 构建darwin amd64
@@ -155,14 +160,14 @@ jobs:
         run: |
           python -m pip install 'pyinstaller>=6,<7'
           python -m pip install -r requirements.txt
-          python -m PyInstaller demo.spec
-          cd dist && tar czf demo-darwin-amd64.tar.gz demo
+          python -m PyInstaller "$APP_NAME.spec"
+          cd dist && tar czf "$APP_NAME-darwin-amd64.tar.gz" "$APP_NAME"
 
       - name: 上传artifact
         uses: actions/upload-artifact@v4
         with:
-          name: demo-darwin-amd64
-          path: dist/demo-darwin-amd64.tar.gz
+          name: dist-darwin-amd64
+          path: dist/${{ env.APP_NAME }}-darwin-amd64.tar.gz
 
   build-darwin-arm64:
     name: 构建darwin arm64
@@ -188,14 +193,14 @@ jobs:
         run: |
           python -m pip install 'pyinstaller>=6,<7'
           python -m pip install -r requirements.txt
-          python -m PyInstaller demo.spec
-          cd dist && tar czf demo-darwin-arm64.tar.gz demo
+          python -m PyInstaller "$APP_NAME.spec"
+          cd dist && tar czf "$APP_NAME-darwin-arm64.tar.gz" "$APP_NAME"
 
       - name: 上传artifact
         uses: actions/upload-artifact@v4
         with:
-          name: demo-darwin-arm64
-          path: dist/demo-darwin-arm64.tar.gz
+          name: dist-darwin-arm64
+          path: dist/${{ env.APP_NAME }}-darwin-arm64.tar.gz
 
   build-linux-amd64:
     name: 构建linux amd64
@@ -221,14 +226,14 @@ jobs:
         run: |
           python -m pip install 'pyinstaller>=6,<7'
           python -m pip install -r requirements.txt
-          python -m PyInstaller demo.spec
-          cd dist && tar czf demo-linux-amd64.tar.gz demo
+          python -m PyInstaller "$APP_NAME.spec"
+          cd dist && tar czf "$APP_NAME-linux-amd64.tar.gz" "$APP_NAME"
 
       - name: 上传artifact
         uses: actions/upload-artifact@v4
         with:
-          name: demo-linux-amd64
-          path: dist/demo-linux-amd64.tar.gz
+          name: dist-linux-amd64
+          path: dist/${{ env.APP_NAME }}-linux-amd64.tar.gz
 
   create-release:
     name: 发布release
@@ -244,8 +249,8 @@ jobs:
       - name: 下载构建结果
         uses: actions/download-artifact@v4
         with:
-          pattern: demo-*
-          path: demo
+          pattern: dist-*
+          path: dist
           merge-multiple: true
 
       - name: 没有版本日志文件自动创建
@@ -261,6 +266,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION }}
-          files: demo/*
+          files: dist/*
           body_path: ${{ env.LOG_FILE }}
           prerelease: ${{ contains(env.VERSION, 'dev') || contains(env.VERSION, 'pre') }}

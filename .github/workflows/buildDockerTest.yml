@@ -3,16 +3,28 @@ name: 构建Docker测试
 on:
   push:
     branches: [ 'main' ]
-    paths: [ 'Dockerfile.test' ]
+    paths: [ '.github/workflows/buildDockerTest.xml' ]
 
 jobs:
   build-docker:
     name: 构建Docker
     runs-on: ubuntu-latest
     env:
-      TAG_LIST: dr34m/docker-test:v0.0.1-test
+      REGISTRY_IMAGE: dr34m/docker-test
+      REGISTRY_LABEL: v0.0.1-test
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
 
     steps:
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV      
+
       - name: 检出仓库代码
         uses: actions/checkout@v4
 
@@ -28,15 +40,23 @@ jobs:
           username: dr34m
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: 构建并推送
+      - name: 构建
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.test
-          push: false
-          tags: ${{ env.TAG_LIST }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/386,linux/arm/v6,linux/s390x,linux/ppc64le
+          labels: ${{ env.REGISTRY_LABEL }}
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: 导出digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
 
       - name: 读取镜像
         run: |
+          ls -a /tmp/digests
           docker images -a
