@@ -24,7 +24,7 @@ jobs:
       - name: Prepare
         run: |
           platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV      
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
       - name: 检出仓库代码
         uses: actions/checkout@v4
@@ -50,8 +50,10 @@ jobs:
           file: Dockerfile.test
           labels: ${{ env.REGISTRY_LABEL }}
           platforms: ${{ matrix.platform }}
-          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true,type=docker
-#https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
+          outputs: |
+            type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+            type=docker
+
       - name: 导出digest
         run: |
           mkdir -p /tmp/digests
