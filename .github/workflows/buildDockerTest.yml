@@ -50,7 +50,9 @@ jobs:
           file: Dockerfile.test
           labels: ${{ env.REGISTRY_LABEL }}
           platforms: ${{ matrix.platform }}
-          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          outputs:
+          - type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          - type=docker
 #https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
       - name: 导出digest
         run: |
@@ -67,7 +69,6 @@ jobs:
 
       - name: 读取镜像
         run: |
-          docker pull ${{ env.REGISTRY_IMAGE }}@${{ steps.build.outputs.digest }}
           docker create --name tmp ${{ steps.build.outputs.imageid }} /bin/true
           docker cp tmp:/app/test.txt test.txt
           cat test.txt
