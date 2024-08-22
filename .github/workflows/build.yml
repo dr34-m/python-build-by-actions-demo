@@ -31,40 +31,42 @@ jobs:
           echo "TAG_LIST=$tagList" >> "$GITHUB_OUTPUT"
           echo "VERSION=$cuVersion" >> "$GITHUB_OUTPUT"
 
-  build-frontend:
-    name: 构建前端
-    runs-on: ubuntu-latest
-    needs: [get-version]
-    env:
-      VERSION: ${{needs.get-version.outputs.VERSION}}
+#  build-frontend:
+#    name: 构建前端
+#    runs-on: ubuntu-latest
+#    needs: [get-version]
+#    env:
+#      VERSION: ${{needs.get-version.outputs.VERSION}}
+#
+#    steps:
+#      - name: 检出仓库代码
+#        uses: actions/checkout@v4
+#
+#      - name: 安装Node.js 14.x
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version: "14.x"
+#
+#      - name: 安装依赖并构建前端
+#        run: |
+#          sed -i "s/__version_placeholder__/$VERSION/g" frontend/src/views/page/setting/index.vue
+#          cd frontend
+#          npm install
+#          npm run build
+#
+#      - name: 上传artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: frontend-dist
+#          path: frontend/dist
+#          retention-days: 1
 
-    steps:
-      - name: 检出仓库代码
-        uses: actions/checkout@v4
-
-      - name: 安装Node.js 14.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: "14.x"
-
-      - name: 安装依赖并构建前端
-        run: |
-          sed -i "s/__version_placeholder__/$VERSION/g" frontend/src/views/page/setting/index.vue
-          cd frontend
-          npm install
-          npm run build
-
-      - name: 上传artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist
-          retention-days: 1
+# , build-frontend
 
   build-docker:
     name: 构建Docker
     runs-on: ubuntu-latest
-    needs: [get-version, build-frontend]
+    needs: [get-version]
     env:
       TAG_LIST: ${{needs.get-version.outputs.TAG_LIST}}
 
@@ -72,11 +74,11 @@ jobs:
       - name: 检出仓库代码
         uses: actions/checkout@v4
 
-      - name: 下载前端
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist
+#      - name: 下载前端
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: frontend-dist
+#          path: frontend/dist
 
       - name: 设置QEMU
         uses: docker/setup-qemu-action@v3
@@ -97,12 +99,16 @@ jobs:
           push: false
 #          push: true
           tags: ${{ env.TAG_LIST }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
+
+      - name: 导出
+        run: |
+          docker image inspect "$TAG_LIST"
 
       - name: 读取镜像
         run: |
           docker images -a
-#,linux/arm64,linux/arm/v7,linux/386,linux/arm/v6,linux/s390x,linux/ppc64le
+#,linux/arm/v7,linux/386,linux/arm/v6,linux/s390x,linux/ppc64le
 #
 #  build-windows-amd64:
 #    name: 构建windows amd64
