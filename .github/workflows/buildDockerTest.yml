@@ -5,13 +5,14 @@ on:
     branches: [ 'main' ]
     paths: [ '.github/workflows/buildDockerTest.yml' ]
 
+env:
+  REGISTRY_IMAGE: dr34m/docker-test
+  REGISTRY_LABEL: v0.0.1-test
+
 jobs:
   build-docker:
     name: 构建Docker
     runs-on: ubuntu-latest
-    env:
-      REGISTRY_IMAGE: dr34m/docker-test
-      REGISTRY_LABEL: v0.0.1-test
     strategy:
       fail-fast: false
       matrix:
