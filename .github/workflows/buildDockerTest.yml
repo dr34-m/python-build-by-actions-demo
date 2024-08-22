@@ -47,7 +47,6 @@ jobs:
           content: .
           load: true
           file: Dockerfile.test
-          tags: ${{ env.REGISTRY_IMAGE }}:${{ env.REGISTRY_LABEL }}
           labels: ${{ env.REGISTRY_LABEL }}
           platforms: ${{ matrix.platform }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
@@ -68,4 +67,6 @@ jobs:
       - name: 读取镜像
         run: |
           ls -a /tmp/digests
+          docker images -a
+          docker tag ${{ steps.build.outputs.digest }} ${{ env.PLATFORM_PAIR }}:tmp
           docker images -a
