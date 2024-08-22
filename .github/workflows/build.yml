@@ -100,16 +100,12 @@ jobs:
       - name: 构建并推送
         uses: docker/build-push-action@v6
         with:
+          load: true
           context: .
           push: false
 #          push: true
           tags: ${{ env.TAG_LIST }}
-          platforms: linux/amd64,linux/arm64
-          outputs: type=docker,dest=/tmp/demo.tar
-
-      - name: 加载镜像
-        run: |
-          /usr/bin/docker load --input /tmp/demo.tar
+          platforms: linux/amd64
 
       - name: 读取镜像
         run: |
