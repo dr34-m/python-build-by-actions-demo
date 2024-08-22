@@ -44,9 +44,11 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
+          content: .
           load: true
           file: Dockerfile.test
-          tag: ${{ env.REGISTRY_IMAGE }}:${{ env.REGISTRY_LABEL }}
+          tags: ${{ env.REGISTRY_IMAGE }}:${{ env.REGISTRY_LABEL }}
+          labels: ${{ env.REGISTRY_LABEL }}
           platforms: ${{ matrix.platform }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 #https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
