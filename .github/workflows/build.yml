@@ -76,6 +76,7 @@ jobs:
 
       - name: 临时-创建目录
         run: |
+          mkdir -r frontend/dist
           touch frontend/dist/1.txt
 
 #      - name: 下载前端
