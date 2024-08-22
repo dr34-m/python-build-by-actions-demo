@@ -222,7 +222,7 @@ jobs:
           python -m pip install 'pyinstaller>=6,<7'
           python -m pip install -r requirements.txt
           python -m PyInstaller demo.spec
-          cd dist && tar czf demo-darwin-arm64.tar.gz demo
+          cd dist && tar czf demo-linux-amd64.tar.gz demo
 
       - name: 上传artifact
         uses: actions/upload-artifact@v4
