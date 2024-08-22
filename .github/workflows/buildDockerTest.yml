@@ -68,5 +68,5 @@ jobs:
         run: |
           ls -a /tmp/digests
           docker images -a
-          docker tag ${{ steps.build.outputs.digest }} ${{ env.PLATFORM_PAIR }}:tmp
+          docker tag ${{ steps.build.outputs.imageid }} ${{ env.PLATFORM_PAIR }}:tmp
           docker images -a
