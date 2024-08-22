@@ -66,7 +66,6 @@ jobs:
 
       - name: 读取镜像
         run: |
-          ls -a /tmp/digests
-          docker images -a
-          docker tag ${{ steps.build.outputs.imageid }} ${{ env.PLATFORM_PAIR }}:tmp
-          docker images -a
+          docker create --name tmp ${{ steps.build.outputs.imageid }} /bin/true
+          docker cp tmp:/app/test.txt test.txt
+          cat test.txt
