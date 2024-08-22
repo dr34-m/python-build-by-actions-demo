@@ -46,15 +46,23 @@ jobs:
         with:
           load: true
           file: Dockerfile.test
+          tag: ${{REGISTRY_IMAGE}}
           labels: ${{ env.REGISTRY_LABEL }}
           platforms: ${{ matrix.platform }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
-
+#https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
       - name: 导出digest
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.build.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
+
+      - name: 上传到artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          retention-days: 1
 
       - name: 读取镜像
         run: |
