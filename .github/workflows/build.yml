@@ -100,20 +100,20 @@ jobs:
       - name: 构建并推送
         uses: docker/build-push-action@v6
         with:
-          load: true
           context: .
           push: false
 #          push: true
           tags: ${{ env.TAG_LIST }}
           platforms: linux/amd64,linux/arm64
+          outputs: type=docker,dest=/tmp/demo.tar
 
-      - name: inspect
+      - name: 加载镜像
         run: |
-          docker image inspect "$TAG_LIST"
+          /usr/bin/docker load --input /tmp/demo.tar
 
       - name: 读取镜像
         run: |
-          docker images -a
+          /usr/bin/docker images -a
 #,linux/arm/v7,linux/386,linux/arm/v6,linux/s390x,linux/ppc64le
 #
 #  build-windows-amd64:
