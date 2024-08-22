@@ -69,3 +69,30 @@ jobs:
           docker create --name tmp ${{ steps.build.outputs.imageid }} /bin/true
           docker cp tmp:/app/test.txt test.txt
           cat test.txt
+
+  merge:
+    name: 合并镜像上传
+    runs-on: ubuntu-latest
+    needs: [build-docker]
+    steps:
+      - name: 下载digest
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: 设置Docker BuildX
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录到DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: dr34m
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 创建清单并推送
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create -t ${{ env.REGISTRY_IMAGE }}:${{ env.REGISTRY_LABEL }} $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *) 
+      
