@@ -98,11 +98,6 @@ jobs:
           tags: ${{ env.TAG_LIST }}
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/386,linux/arm/v6,linux/s390x,linux/ppc64le
 
-      - name: 读取镜像
-        run: |
-          docker images -a
-
-
   build-windows-amd64:
     name: 构建windows amd64
     runs-on: windows-latest
