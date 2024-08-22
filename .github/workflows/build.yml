@@ -100,13 +100,14 @@ jobs:
       - name: 构建并推送
         uses: docker/build-push-action@v6
         with:
+          load: true
           context: .
           push: false
 #          push: true
           tags: ${{ env.TAG_LIST }}
           platforms: linux/amd64,linux/arm64
 
-      - name: 导出
+      - name: inspect
         run: |
           docker image inspect "$TAG_LIST"
 
