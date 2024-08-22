@@ -46,7 +46,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           content: .
-          load: true
+#          load: true
           file: Dockerfile.test
           labels: ${{ env.REGISTRY_LABEL }}
           platforms: ${{ matrix.platform }}
@@ -65,11 +65,11 @@ jobs:
           path: /tmp/digests/*
           retention-days: 1
 
-      - name: 读取镜像
-        run: |
-          docker create --name tmp ${{ steps.build.outputs.imageid }} /bin/true
-          docker cp tmp:/app/test.txt test.txt
-          cat test.txt
+#      - name: 读取镜像
+#        run: |
+#          docker create --name tmp ${{ steps.build.outputs.imageid }} /bin/true
+#          docker cp tmp:/app/test.txt test.txt
+#          cat test.txt
 
   merge:
     name: 合并镜像上传
