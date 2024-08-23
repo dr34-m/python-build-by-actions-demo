@@ -77,12 +77,12 @@ jobs:
       matrix:
         platform:
           - linux/amd64
-          - linux/arm64
-          - linux/arm/v7
-          - linux/386
-          - linux/arm/v6
-          - linux/s390x
-          - linux/ppc64le
+#          - linux/arm64
+#          - linux/arm/v7
+#          - linux/386
+#          - linux/arm/v6
+#          - linux/s390x
+#          - linux/ppc64le
 
     steps:
       - name: 替换平台名称中的斜杠为横杠
@@ -98,6 +98,12 @@ jobs:
         with:
           name: frontend-dist
           path: frontend/dist
+
+      - name: 展示前端文件
+        run: |
+          ls
+          ls frontend
+          ls frontend/dist
 
       - name: 设置QEMU
         uses: docker/setup-qemu-action@v3
