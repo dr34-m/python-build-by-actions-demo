@@ -69,7 +69,7 @@ jobs:
   build-docker:
     name: 构建Docker
     runs-on: ubuntu-latest
-    needs: [ get-version,build-frontend ]
+    needs: [get-version, build-frontend]
     env:
       VERSION: ${{ needs.get-version.outputs.VERSION }}
     strategy:

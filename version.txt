@@ -5,5 +5,5 @@ v0.0.2,latest
 打包多个仅用于docker镜像，其他情况只认第一个【v1.0.0】。
 以下为举例
 v0.0.1-dev-build0
-v0.0.1-pre-build4
+v0.0.1-pre-build2
 v0.0.1,latest
