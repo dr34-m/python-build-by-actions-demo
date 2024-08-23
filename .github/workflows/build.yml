@@ -209,7 +209,7 @@ jobs:
           path: dist/*.zip
 
   build-darwin:
-    name: 构建darwin可执行程序
+    name: 构建darwin
     strategy:
       matrix:
         os:
