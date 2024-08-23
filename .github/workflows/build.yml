@@ -69,7 +69,7 @@ jobs:
   build-docker:
     name: 构建Docker
     runs-on: ubuntu-latest
-    needs: [ get-version ]
+    needs: [ get-version,build-frontend ]
     env:
       VERSION: ${{ needs.get-version.outputs.VERSION }}
     strategy:
@@ -92,6 +92,12 @@ jobs:
 
       - name: 检出仓库代码
         uses: actions/checkout@v4
+
+      - name: 下载前端
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
 
       - name: 设置QEMU
         uses: docker/setup-qemu-action@v3
