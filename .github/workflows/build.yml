@@ -39,7 +39,7 @@ jobs:
   build-frontend:
     name: 构建前端
     runs-on: ubuntu-latest
-    needs: [get-version]
+    needs: [ get-version ]
     env:
       VERSION: ${{ needs.get-version.outputs.VERSION }}
 
@@ -69,7 +69,7 @@ jobs:
   build-docker:
     name: 构建Docker
     runs-on: ubuntu-latest
-    needs: [get-version, build-frontend]
+    needs: [ get-version, build-frontend ]
     env:
       VERSION: ${{ needs.get-version.outputs.VERSION }}
     strategy:
@@ -77,12 +77,12 @@ jobs:
       matrix:
         platform:
           - linux/amd64
-#          - linux/arm64
-#          - linux/arm/v7
-#          - linux/386
-#          - linux/arm/v6
-#          - linux/s390x
-#          - linux/ppc64le
+    #          - linux/arm64
+    #          - linux/arm/v7
+    #          - linux/386
+    #          - linux/arm/v6
+    #          - linux/s390x
+    #          - linux/ppc64le
 
     steps:
       - name: 替换平台名称中的斜杠为横杠
@@ -117,8 +117,8 @@ jobs:
           ls frontend
           ls frontend/dist
 
-      - name: 构建
-        id: build
+      - id: build-image
+        name: 构建docker镜像
         uses: docker/build-push-action@v6
         with:
           content: .
@@ -130,7 +130,7 @@ jobs:
       - name: 导出digest
         run: |
           mkdir -p /tmp/digests
-          digest="${{ steps.build.outputs.digest }}"
+          digest="${{ steps.build-image.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
 
       - name: 上传digest到artifact
@@ -142,7 +142,7 @@ jobs:
 
       - name: 从镜像中提取可执行文件
         run: |
-          docker create --name tmp ${{ steps.build.outputs.imageid }} /bin/true
+          docker create --name tmp ${{ steps.build-image.outputs.imageid }} /bin/true
           docker cp tmp:/app/${{ env.APP_NAME }} ${{ env.APP_NAME }}
           tar czf "$APP_NAME-$VERSION-$PLATFORM_PAIR.tar.gz" ${{ env.APP_NAME }}
 
