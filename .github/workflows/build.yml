@@ -113,7 +113,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           outputs: |
             type=docker
-            type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+            type=image,name=${{ env.DOCKER_USER }}/${{ env.DOCKER_NAME }},push-by-digest=true,name-canonical=true,push=true
 
       - name: 导出digest
         run: |
