@@ -1,6 +1,7 @@
 FROM dr34m/tao-sync:not-for-use-pip-req as builder
 WORKDIR /app
 COPY . /app
+COPY frontend/dist /app/frontend/dist
 RUN ls /app && ls /app/frontend
 RUN ls /app/frontend/dist
 RUN pyinstaller demo.spec
