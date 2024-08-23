@@ -1,3 +1,0 @@
-FROM dr34m/tao-sync:not-for-use-alpine
-WORKDIR /app
-RUN touch /app/test.txt && echo 'testhahahahahah' > /app/test.txt
