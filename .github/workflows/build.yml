@@ -174,15 +174,50 @@ jobs:
         run: |
           docker buildx imagetools create ${{ env.TAG_LIST }}$(printf '${{ env.DOCKER_USER }}/${{ env.DOCKER_NAME }}@sha256:%s ' *)
 
-  build-exec:
-    name: 构建可执行程序
+  build-windows-amd64:
+    name: 构建windows amd64
+    runs-on: windows-latest
+    needs: [get-version, build-frontend]
+    env:
+      VERSION: ${{needs.get-version.outputs.VERSION}}
+
+    steps:
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
+
+      - name: 下载前端
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+      - name: 设置python环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖并构建打包
+        run: |
+          python -m pip install 'pyinstaller>=6,<7'
+          python -m pip install -r requirements.txt
+          python -m PyInstaller ${{ env.APP_NAME }}.spec
+          cd dist && 7z a ${{ env.APP_NAME }}-${{ env.VERSION }}-windows-amd64.zip *
+
+      - name: 上传artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-windows-amd64
+          path: dist/*.zip
+
+
+  build-darwin:
+    name: 构建darwin可执行程序
     strategy:
       fail-fast: false
       matrix:
         os:
           - macos-13
           - macos-14
-          - windows-latest
     runs-on: ${{ matrix.os }}
     needs: [get-version, build-frontend]
     env:
@@ -193,17 +228,11 @@ jobs:
         run: |
           os=${{ matrix.os }}
           if [ "$os" = "macos-13" ]; then
-            SYSTEM_OS="darwin"
             PLATFORM="amd64"
-          elif [ "$os" = "macos-14" ]; then
-            SYSTEM_OS="darwin"
-            PLATFORM="arm64"
           else
-            SYSTEM_OS="windows"
             PLATFORM="amd64"
           fi
           echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
-          echo "SYSTEM_OS=$SYSTEM_OS" >> $GITHUB_ENV
 
       - name: 检出仓库代码
         uses: actions/checkout@v4
@@ -225,18 +254,13 @@ jobs:
           python -m pip install -r requirements.txt
           python -m PyInstaller "$APP_NAME.spec"
           cd dist
-          mkdir compressed
-          if [ "$SYSTEM_OS" = "darwin" ]; then
-            tar czf "compressed/$APP_NAME-$VERSION-darwin-$PLATFORM.tar.gz" "$APP_NAME"
-          else
-            7z a compressed/${{ env.APP_NAME }}-${{ env.VERSION }}-windows-${{ env.PLATFORM }}.zip ${{ env.APP_NAME }}.exe
-          fi
+          tar czf "$APP_NAME-$VERSION-darwin-$PLATFORM.tar.gz" .
 
       - name: 上传artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-darwin-${{ env.PLATFORM }}
-          path: dist/compressed/*
+          path: dist/*.tar.gz
 
   create-release:
     name: 发布release
