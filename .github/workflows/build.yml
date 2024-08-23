@@ -66,13 +66,12 @@ jobs:
           retention-days: 1
 
   build-docker:
-    name: 构建Docker并提取可执行程序
+    name: 构建Docker与linux
     runs-on: ubuntu-latest
     needs: [ get-version, build-frontend ]
     env:
       VERSION: ${{ needs.get-version.outputs.VERSION }}
     strategy:
-      fail-fast: false
       matrix:
         platform:
           - linux/amd64
@@ -212,7 +211,6 @@ jobs:
   build-darwin:
     name: 构建darwin可执行程序
     strategy:
-      fail-fast: false
       matrix:
         os:
           - macos-13
@@ -229,7 +227,7 @@ jobs:
           if [ "$os" = "macos-13" ]; then
             PLATFORM="amd64"
           else
-            PLATFORM="amd64"
+            PLATFORM="arm64"
           fi
           echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
 
